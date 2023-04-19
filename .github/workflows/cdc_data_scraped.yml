@@ -30,5 +30,5 @@ jobs:
     - name: Convert JSON to markdown
       run: |-
         cat cdc_vaccination_data.json |
-        jq -r '.[].Vaccinations[] | [.Date, .Doses_Distributed, .Doses_Administered, .Administered_Dose1, .Administered_Dose2] | @tsv' |
+        jq -r '.[].Location[] | [.Date, .Administered_Moderna, .Administered_Pfizer, .Administered_Janssen, .Dist_Bivalent_PFR] | @tsv' |
         markdown-table > cdc_vaccination_data.md
