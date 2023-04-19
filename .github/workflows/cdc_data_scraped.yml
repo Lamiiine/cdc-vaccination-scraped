@@ -23,3 +23,12 @@ jobs:
         timestamp=$(date -u)
         git commit -m "Latest data: ${timestamp}" || exit 0
         git push
+  convert:
+    runs-on: ubuntu-latest
+    needs: scheduled
+    steps:
+    - name: Convert JSON to markdown
+      run: |-
+        cat cdc_vaccination_data.json |
+        jq -r '.[].Vaccinations[] | [.Date, .Doses_Distributed, .Doses_Administered, .Administered_Dose1, .Administered_Dose2] | @tsv' |
+        markdown-table > cdc_vaccination_data.md
