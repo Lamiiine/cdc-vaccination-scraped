@@ -15,6 +15,16 @@ jobs:
     - name: Fetch latest data
       run: |-
         curl https://covid.cdc.gov/covid-data-tracker/COVIDData/getAjaxData?id=vaccination_data | jq . > cdc_vaccination_data.json
+    - name: Print working directory
+      run: ls -al
+    - name: Convert to TSV
+      run: |-
+        jq -r '.data | map([.Vaccine_Type, .Date, .Doses_Distributed, .Doses_Administered, .Administered_Dose1_Pop_Pct, .Administered_Dose2_Pop_Pct, .Administered_Dose1_Recip_Pct, .Administered_Dose2_Recip_Pct, .Series_Complete_Pop_Pct] | @tsv) | .[]' cdc_vaccination_data.json > cdc_vaccination_data.tsv
+    - name: Convert to Markdown Table
+      uses: gregplaysguitar/markdown-table-action@v1.0.1
+      with:
+        input: cdc_vaccination_data.tsv
+        output: cdc_vaccination_data.md
     - name: Commit and push if it changed
       run: |-
         git config user.name "Automated"
@@ -23,12 +33,3 @@ jobs:
         timestamp=$(date -u)
         git commit -m "Latest data: ${timestamp}" || exit 0
         git push
-  convert:
-    runs-on: ubuntu-latest
-    needs: scheduled
-    steps:
-    - name: Convert JSON to markdown
-      run: |-
-        cat cdc_vaccination_data.json |
-        jq -r '.[].Location[] | [.Date, .Administered_Moderna, .Administered_Pfizer, .Administered_Janssen, .Dist_Bivalent_PFR] | @tsv' |
-        markdown-table > cdc_vaccination_data.md
